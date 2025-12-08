@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Animate Any Character in Any World">
+  <meta name="keywords" content="AniX, AIGC, Video Generation, Computer Vision, MLLM, LLM">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AniX</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <style>
+    body {
+      font-family: 'Noto Sans', sans-serif;
+    }
+    .title.is-1 {
+      font-family: 'Google Sans', sans-serif;
+      font-weight: 700;
+    }
+    .hero-body {
+      padding-bottom: 2rem;
+    }
+    .publication-title {
+      font-size: 2.8rem;
+      line-height: 1.2;
+    }
+    .publication-authors {
+      font-size: 1.4rem;
+      margin-top: 20px;
+    }
+    .publication-venue {
+      font-weight: bold;
+      color: #555;
+      margin-top: 10px;
+      font-size: 1.2rem;
+    }
+    .link-block a {
+      margin: 5px;
+    }
+    .abstract-text {
+      text-align: justify;
+      font-size: 1.1rem;
+    }
+    /* Teaser Image Style */
+    .teaser-image {
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .result-video {
+      width: 100%;
+      border-radius: 5px;
+    }
+    .caption {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 5px;
+      text-align: center;
+    }
+    .placeholder-image {
+      background-color: #eee;
+      border: 2px dashed #aaa;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      color: #888;
+    }
+    /* 调整section之间的间距 */
+    .section {
+      padding-top: 3rem;
+      padding-bottom: 3rem;
+    }
+    /* Trellis 风格渐变文字 */
+    .trellis-gradient {
+      /* 定义渐变方向和颜色节点 */
+      /* background: linear-gradient(90deg, #2A7AE6 0%, #9C5CE7 50%, #F27E63 100%); */
+      background: linear-gradient(107.54deg, #0078d4 .39%, #8661c5 51.23%, #ff9349 100%);
+      
+      /* 标准做法：把背景裁剪成文字形状，并将文字设为透明 */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      
+      /* 字体加粗，让渐变效果更明显，接近原图风格 */
+      font-weight: 800 !important; 
+    }
+    /* 渐变色按钮样式 */
+    .gradient-btn {
+      /* 使用和标题一致的渐变色 */
+      /* background: linear-gradient(90deg, #2A7AE6 0%, #9C5CE7 50%, #F27E63 100%) !important; */
+      background: linear-gradient(107.54deg, #0078d4 .39%, #8661c5 51.23%, #ff9349 100%) !important;
+      border: none !important;
+      color: white !important;
+      font-weight: 700;
+      transition: transform 0.2s ease, opacity 0.2s;
+    }
+
+    /* 鼠标悬停时的效果：轻微放大，增加互动感 */
+    .gradient-btn:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+      color: white !important;
+    }
+    /* 1. 设定人名、机构名、链接的颜色 */
+    .publication-authors, 
+    .publication-authors a {
+      color: #8661c5 !important; /* 紫蓝色 */
+      text-decoration: none !important;
+      transition: opacity 0.2s;
+    }
+
+    .publication-authors a:hover {
+      opacity: 0.7;
+    }
+
+    /* 2. 关键修改：强制将上标（数字、十字架）改回黑色 */
+    .publication-authors sup {
+      color: #000000 !important; /* 纯黑，或者用 #363636 */
+    }
+
+    /* 小标题渐变样式 */
+    .gradient-title {
+      background: linear-gradient(107.54deg, #0078d4 .39%, #8661c5 51.23%, #ff9349 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      
+      display: inline-block;
+      
+      /* --- 新增/修改这两行 --- */
+      padding-bottom: 5px;  /* 关键：给底部多留一点空间，防止切到字母尾巴 */
+      line-height: 1.3;     /* 关键：稍微增加行高，让文字显示得更完整 */
+    }
+
+    /* Abstract 卡片：指定渐变的浅色版 + 黑色文字 */
+    .custom-block {
+      /* 原色：linear-gradient(107.54deg, #0078d4 .39%, #8661c5 51.23%, #ff9349 100%)
+        浅色版：将透明度设为 0.15 (15%)
+      */
+      background: linear-gradient(107.54deg, rgba(0, 120, 212, 0.15) 0.39%, rgba(134, 97, 197, 0.15) 51.23%, rgba(255, 147, 73, 0.15) 100%);
+      
+      /* 圆角和内边距 */
+      border-radius: 20px;
+      padding: 40px;
+      
+      /* 柔和的阴影 */
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      
+      /* 强制黑色文字 */
+      color: #000000 !important;
+    }
+
+    /* 确保内部段落也是纯黑 */
+    .custom-block .content p {
+      color: #000000 !important;
+    }
+  </style>
+  
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          
+          <h1 class="title is-1 publication-title">
+            <span class="trellis-gradient">Animate Any Character in Any World</span>
+          </h1>
+
+          <!-- <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="#">AAA</a><sup>1,2</sup>,
+            </span>
+            <span class="author-block">
+              <a href="#">BBB</a><sup>2</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup><a href="#">National Taiwan University</a>,</span>
+            <span class="author-block"><sup>4</sup><a href="#">NVIDIA</a></span>
+          </div> -->
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://scholar.google.com/citations?user=qnOwZmkAAAAJ">Yitong Wang</a><sup>*1,2</sup>  
+            </span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/fawe/">Fangyun Wei</a><sup>*2</sup>  
+            </span>
+            <span class="author-block">
+              <a href="https://hongyanz.github.io/">Hongyang Zhang</a><sup>4</sup>  
+            </span>
+            <span class="author-block">
+              <a href="https://daibo.info/">Bo Dai</a><sup>&dagger;</sup><sup>3</sup>  
+            </span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/yanlu/">Yan Lu</a><sup>2</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup><a href="https://www.fudan.edu.cn/en/">Fudan University</a> </span>
+            <span class="author-block"><sup>2</sup><a href="https://www.microsoft.com/en-us/research/lab/microsoft-research-asia/">Microsoft Research</a> </span>
+            <span class="author-block"><sup>3</sup><a href="https://www.hku.hk/">The University of Hong Kong</a> </span>
+            <span class="author-block"><sup>4</sup><a href="https://uwaterloo.ca/">University of Waterloo</a></span>
+          </div>
+
+          <div class="is-size-6 publication-authors" style="margin-top: 5px;">
+            <span class="author-block"><sup>*</sup>Equal contribution</span>
+            <span class="author-block"><sup>&dagger;</sup>Corresponding Author</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              
+              <span class="link-block">
+                <a href="#" class="button is-normal is-rounded gradient-btn">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              
+              <span class="link-block">
+                <a href="#" class="button is-normal is-rounded gradient-btn">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              
+              <span class="link-block">
+                <a href="https://github.com/snowflakewang/AniX" class="button is-normal is-rounded gradient-btn">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+
+              <span class="link-block">
+                <a href="#" class="button is-normal is-rounded gradient-btn">
+                  <span class="icon">
+                      <i class="fas fa-play-circle"></i>
+                  </span>
+                  <span>Demo (High-Res)</span>
+                </a>
+              </span>
+              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          
+          <!-- <img src="./static/images/teaser_v3.png" 
+               class="teaser-image" 
+               alt="Animate Any Character in Any World Teaser Image"
+               style="margin-bottom: 20px;"> -->
+          <div class="publication-video">
+            <video controls playsinline width="100%" style="border-radius: 10px;">
+              <source src="./static/AniX_Visualization_demo.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+          <div class="custom-block">
+            <div class="content has-text-justified" style="font-size: 1.1rem;">
+              <p>
+                Introducing <b>AniX</b>, a system enables users to provide 3DGS scene along with a 3D or multi-view character, 
+                enabling interactive control of the character's behaviors and active exploration of the environment through natural language commands. 
+                The system features: 
+              </p>
+              <p>
+                (1) <b>Consistent Environment and Character Fidelity</b>, ensuring visual and spatial coherence with the user-provided scene and character; 
+                (2) a <b>Rich Action Repertoire</b> covering a wide range of behaviors, including locomotion, gestures, and object-centric interactions; 
+                (3) <b>Long-Horizon, Temporally Coherent Interaction</b>, enabling iterative user interaction while maintaining continuity across generated clips; and 
+                (4) <b>Controllable Camera Behavior</b>, which explicitly incorporates camera control—analogous to navigating 3DGS views—to produce accurate, user-specified viewpoints.
+              </p>
+            </div>
+          </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- <section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 gradient-title">Abstract</h2>
+        <div class="content has-text-justified abstract-text">
+          <p>
+            Recent advances in world models have greatly enhanced interactive environment simulation. 
+            Existing methods mainly fall into two categories: 
+            (1) static world generation models, which construct 3D environments without active agents, 
+            and (2) controllable-entity models, which allow a single entity to perform limited actions in an otherwise uncontrollable environment.
+          </p>
+          <p>
+            In this work, we introduce AniX, leveraging the realism and structural grounding of static world generation while extending controllable-entity models to support user-specified characters capable of performing open-ended actions. 
+            Users can provide a 3DGS scene and a character, then direct the character through natural language to perform diverse behaviors—from basic locomotion to object-centric interactions—while freely exploring the environment. 
+            AniX synthesizes temporally coherent video clips that preserve visual fidelity with the provided scene and character, formulated as a conditional autoregressive video generation problem. 
+            Built upon a pre-trained video generator, our training strategy significantly enhances motion dynamics while maintaining generalization across actions and characters. Our evaluation covers a broad range of aspects, including visual quality, character consistency, action controllability, and long-horizon coherence.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        
+        <div class="custom-block">
+          <h2 class="title is-3 gradient-title">Abstract</h2>
+          
+          <div class="content has-text-justified abstract-text">
+          <p>
+            Recent advances in world models have greatly enhanced interactive environment simulation. 
+            Existing methods mainly fall into two categories: 
+            (1) static world generation models, which construct 3D environments without active agents, 
+            and (2) controllable-entity models, which allow a single entity to perform limited actions in an otherwise uncontrollable environment.
+          </p>
+          <p>
+            In this work, we introduce AniX, leveraging the realism and structural grounding of static world generation while extending controllable-entity models to support user-specified characters capable of performing open-ended actions. 
+            Users can provide a 3DGS scene and a character, then direct the character through natural language to perform diverse behaviors—from basic locomotion to object-centric interactions—while freely exploring the environment. 
+            AniX synthesizes temporally coherent video clips that preserve visual fidelity with the provided scene and character, formulated as a conditional autoregressive video generation problem. 
+            Built upon a pre-trained video generator, our training strategy significantly enhances motion dynamics while maintaining generalization across actions and characters. Our evaluation covers a broad range of aspects, including visual quality, character consistency, action controllability, and long-horizon coherence.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- <section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        
+        <div class="custom-block">
+          
+          <h2 class="title is-3 gradient-title">Demo Video</h2>
+          
+          <div class="publication-video">
+            <video controls playsinline width="100%" style="border-radius: 10px;">
+              <source src="./static/AniX_Visualization_demo.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+        </div>
+        </div>
+    </div>
+  </div>
+</section> -->
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths" style="max-width: 1000px; margin: 0 auto;">
+        <h2 class="title is-3 gradient-title">Training Pipeline</h2>
+
+        <div style="margin-bottom: 20px;">
+          <img src="./static/images/overview_v2.png"
+               alt="Method Overview Main"
+               style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        </div>
+
+        <div class="columns is-centered is-vcentered">
+
+          <div class="column is-6">
+            <img src="./static/images/AR.png"
+                 alt="Method Overview Detail"
+                 style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          </div>
+
+          <div class="column is-6">
+            <div class="content has-text-justified custom-block" style="font-size: 0.9rem;">
+              <p style="margin-bottom: 0.5em;">
+                <b>(a)</b> Each training sample consists of a 3D character and a video. Through segmentation and inpainting, we obtain scene videos and mask sequences.
+              </p>
+              <p style="margin-bottom: 0;">
+                <b>(b)</b> AniX predicts target video tokens conditioned on scene, mask, text, and multi-view character tokens within a Multi-Modal Diffusion Transformer, trained using Flow Matching.
+              </p>
+              <p style="margin-bottom: 0;">
+                <b>(c)</b> AniX is extended into an auto-regressive mode by introducing an extra conditioning input—the preceding video tokens, 
+                which supports multi-round user interaction and long-horizon generation while maintaining temporal continuity and semantic coherence between adjacent video clips.
+              </p>
+            </div>
+          </div>
+
+        </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      
+      <div class="column is-four-fifths" style="max-width: 900px; margin: 0 auto;">
+        
+        <h2 class="title is-3 gradient-title">Inference Pipeline</h2>
+        
+        <div style="display: flex; align-items: stretch; justify-content: space-between;">
+          
+          <div style="width: 55%; display: flex; flex-direction: column; justify-content: center;">
+            <img src="./static/images/inference_v2.png" 
+                 alt="Inference Pipeline Main"
+                 style="width: 100%; height: auto; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          </div>
+
+          <div style="width: 43%; display: flex; flex-direction: column;">
+
+            <div class="content has-text-justified custom-block" 
+                style="font-size: 0.9rem; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+
+              <p style="margin-bottom: 0.8em;">
+                <b>(a)</b> Users first specify the inputs, including the character, 3DGS scene, virtual camera location, and character anchor.
+              </p>
+
+              <p style="margin-bottom: 0.8em;">
+                <b>(b)</b> The user-provided text instruction is parsed, and a corresponding camera path is generated. Applying this path to the 3DGS scene produces a rendered scene video.
+              </p>
+
+              <p style="margin-bottom: 0.8em;">
+                <b>(c)</b> AniX then takes multiple inputs as conditions to generate the final output.
+              </p>
+
+              <p style="margin-bottom: 0;">
+                <b>(d)</b> Steps (b) and (c) can be performed iteratively, enabling temporally consistent, long-horizon interactions.
+              </p>
+
+            </div>
+
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- <section class="section is-light" style="background-color: #f5f5f5;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Action Control and Generalization</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX can generalize to various novel actions that are not seen during training. 
+        This phenomenon can be interpreted through the lens of post-training in large language models, 
+        where fine-tuning typically does not disrupt the pre-trained representation space; 
+        rather, it adjusts the response style—for example, to make the outputs more helpful or harmless—while preserving the extensive knowledge acquired during pre-training.
+        In our case, the structurally simple fine-tuning data—composed primarily of fundamental locomotion behaviors—serve to refine motion dynamics and align human embodiment representations, 
+        rather than to redefine the model's generative space.
+      </p>
+    </div>
+    
+    <div class="columns is-centered">
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/clapping_hands.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Clap hands.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/dusting_with_a_feather_duster.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Dust with a feather duster.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/examining_clues_with_a_magnifying_glass.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Exam clues with a magnifying glass.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/holding_an_umbrella.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Hold an umbrella.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/waving_a_checkered_flag.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Wave a checkered flag.</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/boxing_with_gloves.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Box with gloves.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/playing_a_harp.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Play a harp.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/eating_a_slice_of_pizza.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Eat a slice of pizza.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/beating_a_drum_with_sticks.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Beat a drum with sticks.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/weightlifting_with_dumbbells.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Weightlift with dumbbells.</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/holding_a_cat.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Hold a cat.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/holding_a_shield_and_sword.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Hold a shield and sword.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/drinking_a_bottle_of_juice.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Drink a bottle of juice.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/mixing_colors_on_a_palette.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Mix colors on a palette.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/playing_bagpipes.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Play bagpipes.</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/releasing_a_butterfly.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Release a butterfly.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/using_a_walkie-talkie.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Use a walkie-talkie.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/playing_a_flute.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Play a flute.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/play_basketball.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Play basketball.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/drawing_a_bow_and_arrow.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Draw a bow and arrow.</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/using_a_laptop.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Use a laptop.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/reading_a_book.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Read a book.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/swinging_a_tennis_racket.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Swing a tennis racket.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/holding_a_bunch_of_flowers.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Hold a bunch of flowers.</div>
+      </div>
+      <div class="column">
+        <video autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+          <source src="./static/videos_actionControl/praying_with_hands_clasped.mp4" type="video/mp4">
+        </video>
+        <div class="caption">Pray with hands clasped.</div>
+      </div>
+    </div>
+
+  </div>
+</section> -->
+
+<section class="section is-light" style="background-color: #f5f5f5;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Action Control and Generalization</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX can generalize to various novel actions that are not seen during training. 
+        This phenomenon can be interpreted through the lens of post-training in large language models, 
+        where fine-tuning typically does not disrupt the pre-trained representation space; 
+        rather, it adjusts the response style—for example, to make the outputs more helpful or harmless—while preserving the extensive knowledge acquired during pre-training.
+        In our case, the structurally simple fine-tuning data—composed primarily of fundamental locomotion behaviors—serve to refine motion dynamics and align human embodiment representations, 
+        rather than to redefine the model's generative space.
+      </p>
+    </div>
+
+    <div class="video-carousel-container">
+      <button class="carousel-btn prev-btn" onclick="moveActionSlide(-1)">&#10094;</button>
+      
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="actionTrack">
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/clapping_hands.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Clap hands.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/dusting_with_a_feather_duster.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Dust with a feather duster.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/playing_a_harp.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Play a harp.</div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/boxing_with_gloves.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Box with gloves.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/drinking_a_bottle_of_juice.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Drink a bottle of juice.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/holding_an_umbrella.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Hold an umbrella.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/examining_clues_with_a_magnifying_glass.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Exam clues with a magnifying glass.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/eating_a_slice_of_pizza.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Eat a slice of pizza.</div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/beating_a_drum_with_sticks.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Beat a drum with sticks.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/weightlifting_with_dumbbells.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Weightlift with dumbbells.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/holding_a_cat.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Hold a cat.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/holding_a_shield_and_sword.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Hold a shield and sword.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/waving_a_checkered_flag.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Wave a checkered flag.</div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/mixing_colors_on_a_palette.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Mix colors on a palette.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/playing_bagpipes.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Play bagpipes.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/releasing_a_butterfly.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Release a butterfly.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/using_a_walkie-talkie.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Use a walkie-talkie.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/playing_a_flute.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Play a flute.</div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/play_basketball.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Play basketball.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/drawing_a_bow_and_arrow.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Draw a bow and arrow.</div>
+              </div>
+            </div>
+          </div>
+
+           <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/using_a_laptop.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Use a laptop.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/reading_a_book.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Read a book.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/swinging_a_tennis_racket.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Swing a tennis racket.</div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/holding_a_bunch_of_flowers.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Hold a bunch of flowers.</div>
+              </div>
+              <div class="column is-4">
+                <video controls autoplay muted loop playsinline width="100%" style="border-radius: 5px;">
+                  <source src="./static/videos_actionControl/praying_with_hands_clasped.mp4" type="video/mp4">
+                </video>
+                <div class="caption has-text-centered">Praying with hands clasped.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
+      <button class="carousel-btn next-btn" onclick="moveActionSlide(1)">&#10095;</button>
+    </div>
+
+    <div style="text-align:center; margin-top:10px;">
+      <span class="action-dot" onclick="currentSlide(1)"></span> 
+      <span class="action-dot" onclick="currentSlide(2)"></span> 
+      <span class="action-dot" onclick="currentSlide(3)"></span> 
+      <span class="action-dot" onclick="currentSlide(4)"></span> 
+      <span class="action-dot" onclick="currentSlide(5)"></span> 
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .video-carousel-container { position: relative; max-width: 100%; margin: auto; }
+  .carousel-viewport { overflow: hidden; width: 100%; }
+  .carousel-track { display: flex; transition: transform 0.5s ease-in-out; }
+  .carousel-slide { min-width: 100%; box-sizing: border-box; padding: 0 10px; }
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.3); color: white; border: none;
+    font-size: 2rem; padding: 10px 15px; cursor: pointer; z-index: 10;
+    border-radius: 5px; transition: background-color 0.3s;
+  }
+  .carousel-btn:hover { background-color: rgba(0, 0, 0, 0.7); }
+  .prev-btn { left: -50px; }
+  .next-btn { right: -50px; }
+  @media screen and (max-width: 768px) { .prev-btn { left: 0; } .next-btn { right: 0; } }
+  .action-dot {
+    cursor: pointer; height: 10px; width: 10px; margin: 0 2px;
+    background-color: #bbb; border-radius: 50%; display: inline-block;
+    transition: background-color 0.6s ease;
+  }
+  .active-action-dot, .action-dot:hover { background-color: #717171; }
+  .columns { margin-bottom: 0.5rem !important; }
+</style>
+
+<script>
+  // 修改：变量名和函数名全部加上 Action 前缀，防止全局冲突
+  let actionSlideIndex = 0;
+  const actionTrack = document.getElementById('actionTrack');
+  // 关键修改：只获取当前 track 下的 slides，而不是 document 下所有的
+  const actionSlides = actionTrack.getElementsByClassName('carousel-slide');
+  const actionDots = document.getElementsByClassName('action-dot');
+
+  function updateActionCarousel() {
+    const width = actionSlides[0].clientWidth;
+    actionTrack.style.transform = `translateX(-${actionSlideIndex * width}px)`;
+    for (let i = 0; i < actionDots.length; i++) {
+      actionDots[i].className = actionDots[i].className.replace(" active-action-dot", "");
+    }
+    if(actionDots[actionSlideIndex]) actionDots[actionSlideIndex].className += " active-action-dot";
+  }
+
+  function moveActionSlide(n) {
+    actionSlideIndex += n;
+    // 这里的 length 现在只等于5，所以逻辑会正确执行
+    if (actionSlideIndex >= actionSlides.length) actionSlideIndex = 0;
+    else if (actionSlideIndex < 0) actionSlideIndex = actionSlides.length - 1;
+    updateActionCarousel();
+  }
+
+  function currentActionSlide(n) {
+    actionSlideIndex = n - 1;
+    updateActionCarousel();
+  }
+
+  window.addEventListener('resize', updateActionCarousel);
+  updateActionCarousel();
+</script>
+
+<!-- <section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Character Customization</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX demonstrates strong generalization in controlling previously unseen characters. 
+        Leveraging mature 3D generation tools—such as 
+        <a href="https://3d.hunyuanglobal.com/" target="_blank">Hunyuan3D</a>, 
+        <a href="https://www.tripo3d.ai/" target="_blank">Tripo</a>, 
+        <a href="https://www.meshy.ai/" target="_blank">Meshy</a>, and 
+        <a href="https://hyper3d.ai/" target="_blank">Rodin</a>—or sourcing assets from online stores like 
+        <a href="https://sketchfab.com/" target="_blank">Sketchfab</a>, 
+        diverse 3D characters can be easily acquired and used directly for inference.
+      </p>
+    </div>
+
+    <div class="columns is-centered is-mobile">
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/anubis_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/anubis_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Anubis</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/baldEagleMan_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/baldEagleMan_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Bald Eagle Man</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/blackmyth_wukong_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/blackmyth_wukong_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">The Destined One @ Black Myth: Wukong</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/captainTrump_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/captainTrump_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Captain Trump</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered is-mobile">
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/cowRobot_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/cowRobot_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Robot in Western Cowboy Suit</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/invisible_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/invisible_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Invisible Woman @ Marvel Rivals</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/ironMusk_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/ironMusk_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Iron Musk</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/japanBlueOgre_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/japanBlueOgre_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Green-faced Youkai in Blue Sci-fi Armor</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered is-mobile">
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/judy_zootopia_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/judy_zootopia_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Judy Hopps @ Zootopia</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/moaiGuardian_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/moaiGuardian_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Moai Guardian</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/nasaExplorer_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/nasaExplorer_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">NASA Explorer</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/neonSkeleton_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/neonSkeleton_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Neon Skeleton</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered is-mobile">
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/orangeRobot_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/orangeRobot_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Orange Futuristic Robot</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/steampunkCowboy_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/steampunkCowboy_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Steampunk Cowboy</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/winterReindeer_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/winterReindeer_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Reindeer Adventurer</div>
+      </div>
+
+      <div class="column is-3">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <video autoplay muted loop playsinline style="width: 30%; padding-right: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/pumpkinKnight_orbit_white.mp4" type="video/mp4">
+          </video>
+          <video autoplay muted loop playsinline style="width: 70%; padding-left: 2px; border-radius: 5px;">
+            <source src="./static/videos_characterControl/pumpkinKnight_1024x1024.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Pumpkin Knight</div>
+      </div>
+    </div>
+    
+  </div>
+</section> -->
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Character Customization</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX demonstrates strong generalization in controlling previously unseen characters. 
+        Leveraging mature 3D generation tools—such as 
+        <a href="https://3d.hunyuanglobal.com/" target="_blank">Hunyuan3D</a>, 
+        <a href="https://www.tripo3d.ai/" target="_blank">Tripo</a>, 
+        <a href="https://www.meshy.ai/" target="_blank">Meshy</a>, and 
+        <a href="https://hyper3d.ai/" target="_blank">Rodin</a>—or sourcing assets from online stores like 
+        <a href="https://sketchfab.com/" target="_blank">Sketchfab</a>, 
+        diverse 3D characters can be easily acquired and used directly for inference.
+      </p>
+    </div>
+
+    <div class="video-carousel-container">
+      <button class="carousel-btn prev-btn" onclick="moveCharacterSlide(-1)">&#10094;</button>
+      
+      <div class="carousel-viewport">
+        <div class="carousel-track" id="characterTrack">
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/pumpkinKnight_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/pumpkinKnight_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Pumpkin Knight</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/invisible_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/invisible_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Invisible Woman @ Marvel Rivals</div>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/blackmyth_wukong_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/blackmyth_wukong_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">The Destined One @ Black Myth: Wukong</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/steampunkCowboy_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/steampunkCowboy_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Steampunk Cowboy</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/cowRobot_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/cowRobot_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Robot Cowboy</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/baldEagleMan_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/baldEagleMan_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Bald Eagle Man</div>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/ironMusk_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/ironMusk_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Iron Musk</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/japanBlueOgre_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/japanBlueOgre_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Green-faced Youkai in Blue Sci-fi Armor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/anubis_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/anubis_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Anubis</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/moaiGuardian_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/moaiGuardian_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Moai Guardian</div>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/nasaExplorer_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/nasaExplorer_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">NASA Explorer</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/neonSkeleton_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/neonSkeleton_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Neon Skeleton</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="carousel-slide">
+             <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/orangeRobot_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/orangeRobot_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Orange Futuristic Robot</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/captainTrump_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/captainTrump_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Captain Trump</div>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-centered is-mobile">
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/winterReindeer_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/winterReindeer_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Reindeer Adventurer</div>
+                </div>
+              </div>
+              <div class="column is-6">
+                <div class="char-card">
+                  <div class="video-pair">
+                    <video autoplay muted loop playsinline class="video-left">
+                      <source src="./static/videos_characterControl/judy_zootopia_orbit_white.mp4" type="video/mp4">
+                    </video>
+                    <video controls autoplay muted loop playsinline class="video-right">
+                      <source src="./static/videos_characterControl/judy_zootopia_1024x1024.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div class="caption">Judy Hopps @ Zootopia</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <button class="carousel-btn next-btn" onclick="moveCharacterSlide(1)">&#10095;</button>
+    </div>
+
+    <div style="text-align:center; margin-top:10px;">
+      <span class="char-dot" onclick="setCharacterSlide(1)"></span> 
+      <span class="char-dot" onclick="setCharacterSlide(2)"></span> 
+      <span class="char-dot" onclick="setCharacterSlide(3)"></span> 
+      <span class="char-dot" onclick="setCharacterSlide(4)"></span> 
+    </div>
+
+  </div>
+</section>
+
+<style>
+  /* 基础轮播样式 */
+  .video-carousel-container { position: relative; max-width: 100%; margin: auto; }
+  .carousel-viewport { overflow: hidden; width: 100%; }
+  .carousel-track { display: flex; transition: transform 0.5s ease-in-out; }
+  .carousel-slide { min-width: 100%; box-sizing: border-box; padding: 0 5px; }
+  
+  /* 导航按钮 */
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.3); color: white; border: none;
+    font-size: 2rem; padding: 10px 15px; cursor: pointer; z-index: 10;
+    border-radius: 5px; transition: background-color 0.3s;
+  }
+  .carousel-btn:hover { background-color: rgba(0, 0, 0, 0.7); }
+  .prev-btn { left: -50px; }
+  .next-btn { right: -50px; }
+  @media screen and (max-width: 768px) { .prev-btn { left: 0; } .next-btn { right: 0; } }
+
+  /* 视频卡片样式 */
+  .char-card {
+    border-radius: 20px;
+    padding: 20px;
+    color: #000000 !important;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* 视频对容器 */
+  .video-pair {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    overflow: hidden; 
+    margin-bottom: 10px;
+  }
+  .video-left { width: 30%; padding-right: 1px; }
+  .video-right { width: 70%; padding-left: 1px; }
+
+  /* Caption 强制黑色 */
+  .caption {
+    color: #000000 !important;
+    font-weight: 500;
+    margin-top: auto;
+    text-align: center;
+  }
+
+  /* 进度点 */
+  .char-dot {
+    cursor: pointer; height: 10px; width: 10px; margin: 0 2px;
+    background-color: #bbb; border-radius: 50%; display: inline-block;
+    transition: background-color 0.6s ease;
+  }
+  .active-char-dot, .char-dot:hover { background-color: #717171; }
+  
+  .columns { margin-bottom: 1rem !important; }
+</style>
+
+<script>
+  let charSlideIndex = 0;
+  const charTrack = document.getElementById('characterTrack');
+  const charSlides = charTrack.getElementsByClassName('carousel-slide');
+  const charDots = document.getElementsByClassName('char-dot');
+
+  function updateCharCarousel() {
+    const width = charSlides[0].clientWidth;
+    charTrack.style.transform = `translateX(-${charSlideIndex * width}px)`;
+    
+    for (let i = 0; i < charDots.length; i++) {
+      charDots[i].className = charDots[i].className.replace(" active-char-dot", "");
+    }
+    if(charDots[charSlideIndex]) {
+        charDots[charSlideIndex].className += " active-char-dot";
+    }
+  }
+
+  function moveCharacterSlide(n) {
+    charSlideIndex += n;
+    if (charSlideIndex >= charSlides.length) charSlideIndex = 0;
+    else if (charSlideIndex < 0) charSlideIndex = charSlides.length - 1;
+    updateCharCarousel();
+  }
+
+  function setCharacterSlide(n) {
+    charSlideIndex = n - 1;
+    updateCharCarousel();
+  }
+
+  window.addEventListener('resize', updateCharCarousel);
+  updateCharCarousel();
+</script>
+
+<section class="section is-light" style="background-color: #f5f5f5;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Scene Customization</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX supports flexible scene customization. Using state-of-the-art 3DGS scene generators, 
+        users can create diverse environments and control any character to explore these worlds. 
+        In this work, most 3DGS scenes are sourced from <a href="https://marble.worldlabs.ai/" target="_blank">World Labs Marble</a>.
+      </p>
+    </div>
+
+    <div class="columns is-centered">
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/gothicRuins-image-seg.png"
+               alt="Gothic Ruins Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/gothicRuins.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Gothic Ruins</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/nightSchoolBus-image-seg.png"
+               alt="Night School Bus Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/nightSchoolBus.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Night School Bus</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/medievalTown-image-seg.png"
+               alt="Medieval Town Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/medievalTown.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Medieval Town</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered" style="margin-top: 20px;">
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/mushroomCastle-image-seg.png"
+               alt="Mushroom Castle Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/mushroomCastle.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Mushroom Castle</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/hkStreet-image-seg.png"
+               alt="HK Street Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/hkStreet.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Hong Kong Street</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/ancientTown-image-seg.png"
+               alt="Ancient Town Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/ancientTown.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Ancient Town</div>
+      </div>
+    </div>
+
+    <div class="columns is-centered" style="margin-top: 20px;">
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/desertRoad-image-seg.png"
+               alt="Desert Road Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/desertRoad.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Desert Road</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/amusementPark-image-seg.png"
+               alt="Amusement Park Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/amusementPark.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Amusement Park</div>
+      </div>
+
+      <div class="column is-4">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <img src="./static/videos_sceneControl/tokyoStreet-image-seg.png"
+               alt="Tokyo Street Input"
+               style="width: 40%; height: auto; border-radius: 5px; margin-right: 2px; object-fit: cover;">
+          <video controls autoplay muted loop playsinline style="width: 60%; height: auto; border-radius: 5px; margin-left: 2px;">
+            <source src="./static/videos_sceneControl/tokyoStreet.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="caption">Tokyo Street</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">
+      <span class="gradient-title">Long-Horizon Generation</span>
+    </h2>
+    <div class="content has-text-justified custom-block">
+      <p>
+        AniX supports auto-regressive generation, enabling the creation of temporally coherent video sequences that build upon previously generated clips. 
+        This capability allows for extended, long-horizon user-model interactions.
+      </p>
+    </div>
+
+    <div class="columns is-centered">
+      
+      <div class="column is-6">
+        <div style="display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+          
+          <div style="width: 30%; display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+            <div class="video-container-small">
+               <video autoplay muted loop playsinline>
+                 <source src="./static/videos_longControl/nick_zootopia_orbit_white.mp4" type="video/mp4">
+               </video>
+               <span class="overlay-text">3D Character</span>
+            </div>
+            
+            <div class="video-container-small">
+               <video id="sync-video-1" muted loop playsinline>
+                 <source src="./static/videos_longControl/nick_zootopia_1024x1024_subtitle.mp4" type="video/mp4">
+               </video>
+               <span class="overlay-text">Text Instructions</span>
+            </div>
+            
+            <div class="image-container-small">
+               <img src="./static/videos_longControl/citypark-image-seg.png" alt="Input Image" style="width: 100%; height: auto; display: block;">
+               <span class="overlay-text">3D Scene</span>
+            </div>
+          </div>
+
+          <div style="width: 70%;">
+             <video id="main-video-1" controls loop playsinline style="width: 100%; height: auto; display: block; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+               <source src="./static/videos_longControl/nick_zootopia_longControl.mp4" type="video/mp4">
+             </video>
+          </div>
+
+        </div>
+        <div class="caption" style="margin-top: 8px;">Example 1: Nick Wilde @ Zootopia explores a suburban parking lot.</div>
+      </div>
+
+
+      <div class="column is-6">
+        <div style="display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+          
+          <div style="width: 30%; display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+            <div class="video-container-small">
+               <video autoplay muted loop playsinline>
+                 <source src="./static/videos_longControl/orangeRobot_orbit_white.mp4" type="video/mp4">
+               </video>
+               <span class="overlay-text">3D Character</span>
+            </div>
+            
+            <div class="video-container-small">
+               <video id="sync-video-2" muted loop playsinline>
+                 <source src="./static/videos_longControl/orangeRobot_1024x1024_subtitle.mp4" type="video/mp4">
+               </video>
+               <span class="overlay-text">Text Instructions</span>
+            </div>
+            
+            <div class="image-container-small">
+               <img src="./static/videos_longControl/futureUtopia-image-seg.png" alt="Input Image" style="width: 100%; height: auto; display: block;">
+               <span class="overlay-text">3D Scene</span>
+            </div>
+          </div>
+
+          <div style="width: 70%;">
+             <video id="main-video-2" controls loop playsinline style="width: 100%; height: auto; display: block; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+               <source src="./static/videos_longControl/orangeRobot_longControl.mp4" type="video/mp4">
+             </video>
+          </div>
+
+        </div>
+        <div class="caption" style="margin-top: 8px;">Example 2: Orange Futuristic Robot explores a fantastical landscape blending ancient architecture and futuristic technology.</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .video-container-small, .image-container-small {
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 0 2px rgba(0,0,0,0.1);
+  }
+  .video-container-small video, .image-container-small img {
+    width: 100%;
+    display: block;
+  }
+  .overlay-text {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 0.6rem;
+    padding: 2px 0;
+    text-align: center;
+  }
+</style>
+
+<script>
+  function syncVideoPair(mainId, syncId) {
+    const mainVideo = document.getElementById(mainId);
+    const syncVideo = document.getElementById(syncId);
+
+    if (mainVideo && syncVideo) {
+      // 1. 同步播放
+      mainVideo.addEventListener("play", () => {
+        syncVideo.play();
+      });
+
+      // 2. 同步暂停
+      mainVideo.addEventListener("pause", () => {
+        syncVideo.pause();
+      });
+
+      // 3. 同步进度 (拖动进度条时)
+      mainVideo.addEventListener("seeking", () => {
+        syncVideo.currentTime = mainVideo.currentTime;
+      });
+
+      // 4. 防止轻微的时间漂移 (可选)
+      mainVideo.addEventListener("seeked", () => {
+        syncVideo.currentTime = mainVideo.currentTime;
+      });
+    }
+  }
+
+  // 初始化两组视频的同步
+  // 等待页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', () => {
+    syncVideoPair("main-video-1", "sync-video-1");
+    syncVideoPair("main-video-2", "sync-video-2");
+  });
+</script>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title gradient-title">BibTeX</h2>
+    <pre><code>@article{xxx,
+  author    = {xxx},
+  title     = {xxx},
+  journal   = {xxx},
+  year      = {xxx},
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="content has-text-centered">
+      <p>
+        This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+        Commons Attribution-ShareAlike 4.0 International License</a>.
+      </p>
+      <p>
+        Website template credit to <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+      </p>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
