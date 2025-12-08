@@ -53,7 +53,7 @@ In this work, we introduce **AniX**, a system enables users to provide 3DGS scen
 <br>
 
 <div align="center" style="background-color: white; padding: 10px; border-radius: 5px;">
-  <img src="./assets/teaser_v3.png" width="100%" alt="AniX Teaser"/>
+  <img src="./assets/teaser_v3.jpg" width="100%" alt="AniX Teaser"/>
 </div>
 
 ---
