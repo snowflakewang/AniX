@@ -9,18 +9,18 @@
 </p>
 
 <div align="center">
-  <a href="https://scholar.google.com/citations?user=qnOwZmkAAAAJ">Yitong Wang</a><sup>*1,2</sup>&nbsp;&nbsp;
-  <a href="https://www.microsoft.com/en-us/research/people/fawe/">Fangyun Wei</a><sup>*2</sup>&nbsp;&nbsp;
-  <a href="https://hongyanz.github.io/">Hongyang Zhang</a><sup>4</sup>&nbsp;&nbsp;
-  <a href="https://daibo.info/">Bo Dai</a><sup>&dagger;</sup><sup>3</sup>&nbsp;&nbsp;
+  <a href="https://scholar.google.com/citations?user=qnOwZmkAAAAJ">Yitong Wang</a><sup>1,2*</sup>&nbsp;&nbsp;
+  <a href="https://www.microsoft.com/en-us/research/people/fawe/">Fangyun Wei</a><sup>2*</sup>&nbsp;&nbsp;
+  <a href="https://hongyanz.github.io/">Hongyang Zhang</a><sup>3</sup>&nbsp;&nbsp;
+  <a href="https://datascience.hku.hk/people/bo-dai/">Bo Dai</a><sup>4</sup><sup>&dagger;</sup>&nbsp;&nbsp;
   <a href="https://www.microsoft.com/en-us/research/people/yanlu/">Yan Lu</a><sup>2</sup>
 </div>
 
 <p align="center" style="font-size: 0.9em; color: #666;">
   <sup>1</sup><a href="https://www.fudan.edu.cn/en/">Fudan University</a>&nbsp;&nbsp;
   <sup>2</sup><a href="https://www.microsoft.com/en-us/research/lab/microsoft-research-asia/">Microsoft Research</a>&nbsp;&nbsp;
-  <sup>3</sup><a href="https://www.hku.hk/">The University of Hong Kong</a>&nbsp;&nbsp;
-  <sup>4</sup><a href="https://uwaterloo.ca/">University of Waterloo</a>
+  <sup>3</sup><a href="https://uwaterloo.ca/">University of Waterloo</a>&nbsp;&nbsp;
+  <sup>4</sup><a href="https://www.hku.hk/">The University of Hong Kong</a>
   <br>
   <small><sup>*</sup>Equal Contribution</small>
   <small><sup>&dagger;</sup>Corresponding Author</small>
@@ -30,11 +30,9 @@
   <a href="#">
     <img src="https://img.shields.io/badge/arXiv-Paper-B31B1B?style=flat&labelColor=555555&logo=arxiv&logoColor=white" alt="arXiv">
   </a>
-  &nbsp;
   <a href="https://snowflakewang.github.io/AniX/">
     <img src="https://img.shields.io/badge/Project-Page-4F46E5?style=flat&labelColor=555555&logo=googlechrome&logoColor=white" alt="Project Page">
   </a>
-  &nbsp;
   <a href="https://github.com/snowflakewang/AniX">
     <img src="https://img.shields.io/badge/Code-Coming%20Soon-FF5722?style=flat&labelColor=555555&logo=github&logoColor=white" alt="Code Coming Soon">
   </a>
