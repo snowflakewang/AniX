@@ -26,7 +26,7 @@
   <small><sup>&dagger;</sup>Corresponding Author</small>
 </p>
 
-<p align="center">
+<!-- <p align="center">
   <a href="#">
     <img src="https://img.shields.io/badge/arXiv-Paper-B31B1B?style=flat&labelColor=555555&logo=arxiv&logoColor=white" alt="arXiv">
   </a>
@@ -36,6 +36,12 @@
   <a href="https://github.com/snowflakewang/AniX">
     <img src="https://img.shields.io/badge/Code-Coming%20Soon-FF5722?style=flat&labelColor=555555&logo=github&logoColor=white" alt="Code Coming Soon">
   </a>
+</p> -->
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2512.17796"><img src="https://img.shields.io/badge/arXiv-Paper-B31B1B?style=flat&labelColor=555555&logo=arxiv&logoColor=white" alt="arXiv"></a>
+  <a href="https://snowflakewang.github.io/AniX/"><img src="https://img.shields.io/badge/Project-Page-4F46E5?style=flat&labelColor=555555&logo=googlechrome&logoColor=white" alt="Project Page"></a>
+  <a href="https://github.com/snowflakewang/AniX"><img src="https://img.shields.io/badge/Code-Coming%20Soon-FF5722?style=flat&labelColor=555555&logo=github&logoColor=white" alt="Code Coming Soon"></a>
 </p>
 
 </div>
