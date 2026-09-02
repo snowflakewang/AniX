@@ -1,3 +1,41 @@
+# IDE
 .vscode/
+
+# Local documents and scratch files
 arxiv_version/
 tmp.py
+tmp/
+*.log
+
+# Python bytecode and tool caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Python environments and build artifacts
+.venv/
+venv/
+env/
+build/
+dist/
+*.egg-info/
+
+# Downloaded models, checkpoints, and experiment logs
+dataset/
+models/
+checkpoints/
+log_EXP*/
+runs/
+wandb/
+
+# Generated inference results
+input_demo/
+output/
+outputs/
+results/
